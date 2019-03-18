@@ -1,5 +1,6 @@
 from csv import reader
 from NeuroData import NeuroData
+from datetime import datetime
 import ast
 import xlsxwriter
 
@@ -26,6 +27,23 @@ def write_headers(worksheet):
     worksheet.write(row, col + 12 + MAX_KEY_PRESSES, "other.keys.pressed?")
     worksheet.write(row, col + 13 + MAX_KEY_PRESSES, "key.type")
 
+def dateToTimestamp(date):
+    return datetime.strptime(date[:-5], "%Y_%b_%d").strftime("%Y-%m-%d-") + date[-4:]
+
+def getSortKey(data):
+    return data.std_date
+
+def getSecondSortKey(data):
+    return data.trials_thisN
+
+def sortByDateRange(list):
+    # Calculate indices for date range and perform the sort and sew back up
+
+    lo = 0
+    for i in range(len(list)-1):
+        if i+1 == len(list) or list[i].date != list[i+1].date:
+            list[lo:i+1] = sorted(list[lo:i+1], key=getSecondSortKey)
+            lo = i+1
 
 def main():
     # Create workbook
@@ -54,11 +72,17 @@ def main():
                         other_keys_pressed = 1
 
                 data = NeuroData(row[14], row[7], row[8], row[9], row[10], row[11],
-                                 row[12], row[13], row[0], row[1], row[2], row[3],
-                                 key_presses, other_keys_pressed)
+                                 dateToTimestamp(row[11]), row[12], row[13], row[0],
+                                 row[1], row[2], row[3], key_presses, other_keys_pressed)
                 list.append(data)
+
     # sort list by date
-    # then sort date ranges by
+    print("\t>Sorting entries by date...")
+    list.sort(key=getSortKey)
+
+    # then sort date ranges by trials_thisN
+    print("\t>Sorting same date entries by parameter: (trials.thisN)...")
+    sortByDateRange(list)
 
     print("\t>Writing to output file...")
     # Write headers

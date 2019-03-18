@@ -1,6 +1,6 @@
 class NeuroData:
     def __init__(self, ID, attention_response, attention_rt, awareness_response,
-                 awareness_rt, date, expName, session, trials_thisRepN,
+                 awareness_rt, date, std_date, expName, session, trials_thisRepN,
                  trials_thisTrialN, trials_thisN, trials_thisIndex, key_presses,
                  other_keys_pressed):
         self.ID = ID
@@ -9,6 +9,7 @@ class NeuroData:
         self.awareness_response = awareness_response
         self.awareness_rt = awareness_rt
         self.date = date
+        self.std_date = std_date
         self.expName = expName
         self.session = session
         self.trials_thisRepN = trials_thisRepN
