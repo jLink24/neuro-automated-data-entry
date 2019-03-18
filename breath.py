@@ -23,6 +23,8 @@ def write_headers(worksheet):
     worksheet.write(row, col + 11, "trials.thisIndex")
     for i in range(MAX_KEY_PRESSES):
         worksheet.write(row, col + 12 + i, "key.press.{0}".format(i+1))
+    worksheet.write(row, col + 12 + MAX_KEY_PRESSES, "other.keys.pressed?")
+    worksheet.write(row, col + 13 + MAX_KEY_PRESSES, "key.type")
 
 
 def main():
@@ -58,18 +60,14 @@ def main():
     # sort list by date
     # then sort date ranges by
 
-    # do i need to find the max number of key presses?
-    # The answer is 73
-
     print("\t>Writing to output file...")
     # Write headers
     write_headers(worksheet)
 
     row = 1
     col = 0
-
     for i,data in enumerate(list):
-        worksheet.write(row, col, data.ID)
+        worksheet.write(row, col, data.ID.zfill(4))
         worksheet.write(row, col + 1, data.attention_response)
         worksheet.write(row, col + 2, data.attention_rt)
         worksheet.write(row, col + 3, data.awareness_response)
@@ -88,6 +86,9 @@ def main():
         nFillerValues = MAX_KEY_PRESSES-len(data.key_presses)
         for i in range(nFillerValues):
             worksheet.write(row, col + len(data.key_presses) + i + 12, FILLER_VALUE)
+        worksheet.write(row, col + MAX_KEY_PRESSES + 12, data.other_keys_pressed)
+        if data.other_keys_pressed == 1:
+            worksheet.write(row, col + MAX_KEY_PRESSES + 13, "space")
         row += 1
 
     print("\t>Closing workbook...")
