@@ -1,6 +1,10 @@
 from csv import reader
 from NeuroData import NeuroData
+import ast
 import xlsxwriter
+
+MAX_KEY_PRESSES = 73
+FILLER_VALUE = 2
 
 def write_headers(worksheet):
     row = 0
@@ -17,57 +21,77 @@ def write_headers(worksheet):
     worksheet.write(row, col + 9, "trials.thisTrialN")
     worksheet.write(row, col + 10, "trials.thisN")
     worksheet.write(row, col + 11, "trials.thisIndex")
+    for i in range(MAX_KEY_PRESSES):
+        worksheet.write(row, col + 12 + i, "key.press.{0}".format(i+1))
 
 
-# Create workbook
-workbook = xlsxwriter.Workbook('Neuro_data.xlsx')
-worksheet = workbook.add_worksheet()
-list = []
+def main():
+    # Create workbook
+    print("\t>Creating xlsx output file...")
+    workbook = xlsxwriter.Workbook('Neuro_data.xlsx')
+    worksheet = workbook.add_worksheet()
+    list = []
 
-# Open csv file
-with open("./test-data/data.csv") as file:
-    for i,row in enumerate(reader(file)):
-        if i > 0:
-            other_keys_pressed = False
-            key_presses = []
-            for key_press in row[4]:
-                if key_press == 'left':
-                    key_presses.append(1)
-                elif key_press == 'right':
-                    key_presses.append(0)
-                else:
-                    key_presses.append(3)
-                    other_keys_pressed = True
+    # Need to make this work with multiple files
 
-            data = NeuroData(row[14], row[7], row[8], row[9], row[10], row[11],
-                             row[12], row[13], row[0], row[1], row[2], row[3],
-                             key_presses, other_keys_pressed)
-            list.append(data)
-# sort list by date
-# then sort date ranges by
+    # Open csv file
+    print("\t>Opening data file...")
+    with open("./test-data/data.csv") as file:
+        print("\t>Processing file: {0}".format("data.csv"))
+        for i,row in enumerate(reader(file)):
+            if i > 0:
+                other_keys_pressed = 0
+                key_presses = []
+                for key_press in ast.literal_eval(row[4]):
+                    if key_press == 'left':
+                        key_presses.append(1)
+                    elif key_press == 'right':
+                        key_presses.append(0)
+                    else:
+                        key_presses.append(3)
+                        other_keys_pressed = 1
 
-# do i need to find the max number of key presses?
+                data = NeuroData(row[14], row[7], row[8], row[9], row[10], row[11],
+                                 row[12], row[13], row[0], row[1], row[2], row[3],
+                                 key_presses, other_keys_pressed)
+                list.append(data)
+    # sort list by date
+    # then sort date ranges by
 
-# Write headers
-write_headers(worksheet)
+    # do i need to find the max number of key presses?
+    # The answer is 73
 
-row = 1
-col = 0
+    print("\t>Writing to output file...")
+    # Write headers
+    write_headers(worksheet)
 
-for i,data in enumerate(list):
-    worksheet.write(row, col, data.ID)
-    worksheet.write(row, col + 1, data.attention_response)
-    worksheet.write(row, col + 2, data.attention_rt)
-    worksheet.write(row, col + 3, data.awareness_response)
-    worksheet.write(row, col + 4, data.awareness_rt)
-    worksheet.write(row, col + 5, data.date)
-    worksheet.write(row, col + 6, data.expName)
-    worksheet.write(row, col + 7, data.session)
-    worksheet.write(row, col + 8, data.trials_thisRepN)
-    worksheet.write(row, col + 9, data.trials_thisTrialN)
-    worksheet.write(row, col + 10, data.trials_thisN)
-    worksheet.write(row, col + 11, data.trials_thisIndex)
-    row += 1
+    row = 1
+    col = 0
 
+    for i,data in enumerate(list):
+        worksheet.write(row, col, data.ID)
+        worksheet.write(row, col + 1, data.attention_response)
+        worksheet.write(row, col + 2, data.attention_rt)
+        worksheet.write(row, col + 3, data.awareness_response)
+        worksheet.write(row, col + 4, data.awareness_rt)
+        worksheet.write(row, col + 5, data.date)
+        worksheet.write(row, col + 6, data.expName)
+        worksheet.write(row, col + 7, data.session)
+        worksheet.write(row, col + 8, data.trials_thisRepN)
+        worksheet.write(row, col + 9, data.trials_thisTrialN)
+        worksheet.write(row, col + 10, data.trials_thisN)
+        worksheet.write(row, col + 11, data.trials_thisIndex)
+        # Write key presses
+        for i,key_press in enumerate(data.key_presses):
+            worksheet.write(row, col + i + 12, key_press)
+        # Add filler value to columns
+        nFillerValues = MAX_KEY_PRESSES-len(data.key_presses)
+        for i in range(nFillerValues):
+            worksheet.write(row, col + len(data.key_presses) + i + 12, FILLER_VALUE)
+        row += 1
 
-workbook.close()
+    print("\t>Closing workbook...")
+    workbook.close()
+
+if __name__ == '__main__':
+    main()
