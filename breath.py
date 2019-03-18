@@ -2,6 +2,7 @@ from csv import reader
 from NeuroData import NeuroData
 from datetime import datetime
 import ast
+import os
 import xlsxwriter
 
 MAX_KEY_PRESSES = 73
@@ -53,28 +54,28 @@ def main():
     list = []
 
     # Need to make this work with multiple files
+    for filename in os.listdir(os.path.join(os.getcwd(),"test-data/")):
+        # Open csv file
+        print("\t>Opening data file...")
+        with open("./test-data/" + filename) as file:
+            print("\t>Processing file: {0}".format("data.csv"))
+            for i,row in enumerate(reader(file)):
+                if i > 0:
+                    other_keys_pressed = 0
+                    key_presses = []
+                    for key_press in ast.literal_eval(row[4]):
+                        if key_press == 'left':
+                            key_presses.append(1)
+                        elif key_press == 'right':
+                            key_presses.append(0)
+                        else:
+                            key_presses.append(3)
+                            other_keys_pressed = 1
 
-    # Open csv file
-    print("\t>Opening data file...")
-    with open("./test-data/data.csv") as file:
-        print("\t>Processing file: {0}".format("data.csv"))
-        for i,row in enumerate(reader(file)):
-            if i > 0:
-                other_keys_pressed = 0
-                key_presses = []
-                for key_press in ast.literal_eval(row[4]):
-                    if key_press == 'left':
-                        key_presses.append(1)
-                    elif key_press == 'right':
-                        key_presses.append(0)
-                    else:
-                        key_presses.append(3)
-                        other_keys_pressed = 1
-
-                data = NeuroData(row[14], row[7], row[8], row[9], row[10], row[11],
-                                 dateToTimestamp(row[11]), row[12], row[13], row[0],
-                                 row[1], row[2], row[3], key_presses, other_keys_pressed)
-                list.append(data)
+                    data = NeuroData(row[14], row[7], row[8], row[9], row[10], row[11],
+                                     dateToTimestamp(row[11]), row[12], row[13], row[0],
+                                     row[1], row[2], row[3], key_presses, other_keys_pressed)
+                    list.append(data)
 
     # sort list by date
     print("\t>Sorting entries by date...")
