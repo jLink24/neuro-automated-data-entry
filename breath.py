@@ -58,7 +58,7 @@ def main():
         # Open csv file
         print("\t>Opening data file...")
         with open("./test-data/" + filename) as file:
-            print("\t>Processing file: {0}".format("data.csv"))
+            print("\t>Processing file: {0}".format(filename))
             for i,row in enumerate(reader(file)):
                 if i > 0:
                     other_keys_pressed = 0
